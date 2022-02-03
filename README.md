@@ -91,7 +91,7 @@ openssl x509 -noout -text -in certs/cacert.pem
 
 You can inspect various certificate meta-data such as dates, issuer, subject, etc.
 
-5. Create Intermediate CA directory structure
+5. Create Intermediate CA directory structure. Optionally you can create an encrypted password file as described already. We are reusing the same one here but you shouldn't if doing this for real.
 
 ```
 [~/root/tls]# mkdir -p intermediate/{certs,csr,private}
@@ -129,13 +129,7 @@ Verify the trust chain of the intermediate certificate is intact with the Root C
 [~/root/tls]# openssl verify -CAfile certs/cacert.pem intermediate/certs/intermediate.cacert.pem
 ```
 
-Convert to PEM format.
-
-```
-[~/root/tls]# openssl x509 -in intermediate/certs/intermediate.cacert.pem -out intermediate/certs/intermediate.cacert.pem -outform PEM
-```
-
-9. Create the Certificate Chain (aka Certificate Bundle)
+1. Create the Certificate Chain (aka Certificate Bundle)
 
 The bundle is just all the certificates in the chain in PEM format concatenated into the same file.
 
@@ -154,5 +148,5 @@ The bundle is just all the certificates in the chain in PEM format concatenated 
 For step 3 (Signing the CSR) do the following instead.
 
 ```
-openssl x509 -req -in client.csr -passin file:mypass.enc -CA ~/root/tls/intermediate/certs/ca-chain-bundle.cert.pem -CAkey ~/root/tls/intermediate/private/intermediate.cakey.pem -out client.crt -CAcreateserial -days 365 -sha256 -extfile ext.cnf
+openssl ca -days 365 -batch -create_serial -cert ./certs/ca-chain-bundle.cert.pem -keyfile ./private/intermediate.cakey.pem -in client.csr -out client.pem -extfile ext.cnf -config openssl.cnf -passin file:mypass.enc
 ```
